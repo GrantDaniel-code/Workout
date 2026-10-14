@@ -5,7 +5,7 @@
 // After any change we save and redraw the screen.
 
 import { FOCUSES, EQUIPMENT, SHOT_TYPES, byId } from './exercises.js';
-import { generate, blankWorkout, swapFor, addable, makeItem, totalMinutes } from './generator.js';
+import { generate, blankWorkout, swapFor, addable, makeItem, totalMinutes, SPLITS, SPLIT_ORDER, nextSplit } from './generator.js';
 import * as db from './storage.js';
 import * as U from './units.js';
 
@@ -14,7 +14,7 @@ const overlay = document.getElementById('overlay');
 
 let settings = db.getSettings();
 let draft = db.getDraft();                       // workout being planned/logged
-let form = { focus: 'strength', minutes: 60, pain: null };
+let form = { focus: 'strength', minutes: 60, pain: null, split: 'auto' };
 let mode = draft?.status === 'active' ? 'log' : 'edit';
 let finish = null;                               // the "finish workout" form
 let pickerQuery = '';
@@ -22,6 +22,11 @@ let pickerQuery = '';
 // ---------- small helpers ----------
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const focusName = f => (f === 'custom' ? 'Custom session' : FOCUSES[f]?.name || f);
+// "Chest day", "Custom session · Back", "Running"...
+const titleOf = w => {
+  if (!w.split) return focusName(w.focus);
+  return w.focus === 'strength' ? `${SPLITS[w.split].name} day` : `${focusName(w.focus)} · ${SPLITS[w.split].name}`;
+};
 const saveDraft = () => db.saveDraft(draft);
 const go = hash => (location.hash === hash ? render() : (location.hash = hash));
 const num = v => (v === '' || v == null || isNaN(parseFloat(v)) ? null : parseFloat(v));
@@ -56,6 +61,26 @@ const scoreboard = s => `
     <div class="score"><div class="num">${s.total}</div><div class="lbl">All time</div></div>
   </div>`;
 
+// Lifting rotation: when each split was last trained, and which is next.
+function rotationStrip() {
+  const ws = db.getWorkouts();
+  const next = nextSplit(ws).split;
+  const ago = k => {
+    const w = [...ws].reverse().find(x => x.split === k);
+    if (!w) return 'Not yet';
+    const days = Math.round((new Date(dayKey(new Date())) - new Date(dayKey(w.finishedAt))) / 86400000);
+    return days === 0 ? 'Today' : days === 1 ? 'Yesterday' : `${days}d ago`;
+  };
+  return `
+    <div class="rotation">
+      ${SPLIT_ORDER.map(k => `
+        <div class="rot ${k === next ? 'next' : ''}">
+          <div class="rot-name">${SPLITS[k].name}</div>
+          <div class="rot-when">${k === next ? 'Up next' : ago(k)}</div>
+        </div>`).join('')}
+    </div>`;
+}
+
 // =====================================================================
 // HOME: build a workout
 // =====================================================================
@@ -70,7 +95,7 @@ function homeView() {
     ${draft ? `
       <div class="card draft-card">
         <div class="small">${draft.status === 'active' ? 'IN PROGRESS' : 'PLANNED, NOT STARTED'}</div>
-        <div class="item-name">${esc(focusName(draft.focus))}</div>
+        <div class="item-name">${esc(titleOf(draft))}</div>
         <div class="small">${draft.items.length} exercises · ~${totalMinutes(draft.items)} min</div>
         <button class="btn primary block" data-act="open-draft" style="margin-top:10px">Continue</button>
       </div>` : ''}
@@ -82,6 +107,14 @@ function homeView() {
           <div class="t">${f.name}</div><div class="d">${f.desc}</div>
         </button>`).join('')}
     </div>
+
+    ${form.focus === 'strength' ? `
+      <div class="h2">Lifting day</div>
+      ${rotationStrip()}
+      <div class="chips">
+        ${['auto', ...SPLIT_ORDER].map(k => `<button class="chip ${form.split === k ? 'on' : ''}" data-act="split" data-v="${k}">${k === 'auto' ? 'Auto (next up)' : SPLITS[k].name}</button>`).join('')}
+      </div>
+      <p class="small" style="margin-top:6px">Every lifting day ends with core and a cardio finisher.</p>` : ''}
 
     <div class="h2">Time</div>
     <div class="chips">
@@ -239,7 +272,7 @@ function workoutView() {
   const sections = [['warmup', 'Warm-up'], ['main', 'Main work'], ['cooldown', 'Cool-down']];
   const painBit = draft.kneePain != null ? ` · knee ${draft.kneePain}/10` : '';
   const html = `
-    <div class="h1">${esc(focusName(draft.focus))}</div>
+    <div class="h1">${esc(titleOf(draft))}</div>
     <p class="sub">~${totalMinutes(draft.items)} min · ${draft.items.length} exercises${painBit}</p>
     ${draft.notes.map(n => `<div class="notice ${n.level === 'bad' ? 'bad' : n.level === 'info' ? 'info' : ''}">${esc(n.text)}</div>`).join('')}
 
@@ -303,7 +336,7 @@ function historyView() {
         <a class="card hist" href="#/history/${w.id}">
           <div class="date"><div class="mo">${d.toLocaleDateString(undefined, { month: 'short' }).toUpperCase()}</div><div class="dy">${d.getDate()}</div></div>
           <div class="hist-body">
-            <div class="item-name">${esc(focusName(w.focus))} ${w.trainer ? '<span class="tag">Trainer</span>' : ''}</div>
+            <div class="item-name">${esc(titleOf(w))} ${w.trainer ? '<span class="tag">Trainer</span>' : ''}</div>
             <div class="small">${w.durationMin} min${w.rpe ? ` · effort ${w.rpe}/10` : ''}</div>
             <div class="small">${summarize(w).join(' · ') || '&nbsp;'}</div>
           </div>
@@ -340,7 +373,7 @@ function historyDetail(id) {
   const d = new Date(w.finishedAt);
   return `
     <a href="#/history" class="small">← History</a>
-    <div class="h1">${esc(focusName(w.focus))}</div>
+    <div class="h1">${esc(titleOf(w))}</div>
     <p class="sub">${d.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' })} ${w.trainer ? '<span class="tag">Trainer</span>' : ''}</p>
     <div class="scoreboard">
       <div class="score"><div class="num">${w.durationMin}</div><div class="lbl">Minutes</div></div>
@@ -388,7 +421,8 @@ function settingsView() {
 // OVERLAYS: add-exercise picker, finish form
 // =====================================================================
 const GROUPS = {
-  squat: 'Legs', hinge: 'Legs', 'single-leg': 'Legs', push: 'Upper body', pull: 'Upper body', shoulders: 'Upper body', arms: 'Upper body',
+  squat: 'Legs', hinge: 'Legs', 'single-leg': 'Legs', chest: 'Chest', 'chest-acc': 'Chest', back: 'Back', 'back-acc': 'Back',
+  shoulders: 'Shoulders', biceps: 'Arms', triceps: 'Arms', forearms: 'Arms', finisher: 'Cardio finishers',
   core: 'Core', calves: 'Knee care & calves', 'knee-care': 'Knee care & calves', 'jump-vertical': 'Plyometrics', 'jump-single': 'Plyometrics',
   'jump-horizontal': 'Plyometrics', reactive: 'Plyometrics', 'power-upper': 'Plyometrics', accel: 'Speed & agility', 'max-speed': 'Speed & agility',
   agility: 'Speed & agility', decel: 'Speed & agility', run: 'Running', engine: 'Conditioning', circuit: 'Conditioning', handle: 'Basketball',
@@ -432,6 +466,10 @@ function finishSheet() {
       <div class="h2">Knee pain now</div>
       <div class="chips">${chipRow('fin-pain', f.kneePainAfter)}</div>
       ${f.kneePainAfter > 3 ? '<div class="notice bad" style="margin-top:10px">Pain went above 3. Rest and ice today, pick Recovery or Swim/Bike next, and consider getting your knees checked.</div>' : ''}
+      <div class="h2">Lifting day (for the rotation)</div>
+      <div class="chips">
+        ${[null, ...SPLIT_ORDER].map(k => `<button class="chip ${f.split === k ? 'on' : ''}" data-act="fin-split" data-v="${k || ''}">${k ? SPLITS[k].name : 'None'}</button>`).join('')}
+      </div>
       <div class="h2">Trainer session?</div>
       <div class="seg">
         <button class="${!f.trainer ? 'on' : ''}" data-act="fin-trainer" data-v="0">On my own</button>
@@ -468,11 +506,13 @@ const ACTIONS = {
   focus: (b) => { form.focus = b.dataset.v; render(); },
   min: (b) => { form.minutes = +b.dataset.v; render(); },
   pain: (b) => { form.pain = +b.dataset.v; render(); },
+  split: (b) => { form.split = b.dataset.v; render(); },
 
   generate() {
     if (form.pain == null) { alert('Tap your knee pain first (0 if none).'); return; }
     if (!replaceDraftOk()) return;
-    draft = generate({ focus: form.focus, minutes: form.minutes, kneePain: form.pain, equipment: settings.equipment });
+    const pick = form.split === 'auto' ? nextSplit(db.getWorkouts(), form.pain) : { split: form.split, legsDelayed: false };
+    draft = generate({ focus: form.focus, minutes: form.minutes, kneePain: form.pain, equipment: settings.equipment, ...pick });
     saveDraft(); mode = 'edit'; form.pain = null;
     go('#/workout');
   },
@@ -530,12 +570,13 @@ const ACTIONS = {
     const elapsed = draft.startedAt ? Math.round((Date.now() - new Date(draft.startedAt)) / 60000) : 0;
     finish = {
       durationMin: elapsed >= 10 ? elapsed : totalMinutes(draft.items) || draft.minutes,
-      rpe: null, kneePainAfter: null, trainer: !!draft.trainer, comment: '',
+      rpe: null, kneePainAfter: null, trainer: !!draft.trainer, comment: '', split: draft.split || null,
     };
     overlay.innerHTML = finishSheet(); showOverlay();
   },
   'fin-rpe': (b) => { finish.rpe = +b.dataset.v; overlay.innerHTML = finishSheet(); },
   'fin-pain': (b) => { finish.kneePainAfter = +b.dataset.v; overlay.innerHTML = finishSheet(); },
+  'fin-split': (b) => { finish.split = b.dataset.v || null; overlay.innerHTML = finishSheet(); },
   'fin-trainer': (b) => { finish.trainer = b.dataset.v === '1'; overlay.innerHTML = finishSheet(); },
   save() {
     const w = { ...draft, ...finish, durationMin: num(finish.durationMin) || 0, status: 'done', finishedAt: new Date().toISOString() };

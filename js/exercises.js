@@ -76,17 +76,25 @@ export const LIBRARY = [
   reps('db-hip-thrust', 'DB hip thrust on bench', ['hinge'], ['db', 'bench'], 0, 3, 10, 90, 'Upper back on the bench, dumbbell on hips. Squeeze glutes hard at the top.'),
   reps('tonal-deadlift', 'Tonal deadlift', ['hinge'], ['tonal'], 0, 4, 6, 120, 'Use when you want more load than the dumbbells give you.'),
 
-  // ---------- Strength: push ----------
-  reps('db-bench', 'DB bench press', ['push'], ['db', 'bench'], 0, 4, 8, 90, 'Shoulder blades pinned back, control down, press fast.'),
-  reps('pushup', 'Push-ups', ['push'], ['bw'], 0, 3, 15, 60, 'Body in one straight line. Add a pause at the bottom when 15 feels easy.'),
-  reps('db-floor-press', 'DB floor press', ['push'], ['db'], 0, 3, 10, 75, 'Elbows touch the floor, pause, press.'),
-  reps('tonal-bench', 'Tonal bench press', ['push'], ['tonal', 'bench'], 0, 4, 6, 120, 'Heavier pressing day.'),
+  // ---------- Chest ----------
+  reps('db-bench', 'DB bench press', ['chest'], ['db', 'bench'], 0, 4, 8, 90, 'Shoulder blades pinned back, control down, press fast.'),
+  reps('pushup', 'Push-ups', ['chest'], ['bw'], 0, 3, 15, 60, 'Body in one straight line. Add a pause at the bottom when 15 feels easy.'),
+  reps('db-floor-press', 'DB floor press', ['chest'], ['db'], 0, 3, 10, 75, 'Elbows touch the floor, pause, press.'),
+  reps('feet-up-pushup', 'Feet-elevated push-ups', ['chest'], ['bw', 'bench'], 0, 3, 12, 60, 'Feet on the bench. Hits upper chest.'),
+  reps('tonal-bench', 'Tonal bench press', ['chest'], ['tonal', 'bench'], 0, 4, 6, 120, 'Heavier pressing day.'),
+  reps('db-fly', 'DB fly', ['chest-acc'], ['db', 'bench'], 0, 3, 12, 60, 'Slight bend in elbows, open wide, squeeze together.'),
+  reps('squeeze-press', 'DB squeeze press', ['chest-acc'], ['db', 'bench'], 0, 3, 12, 60, 'Press the dumbbells together the whole rep.'),
+  reps('db-pullover', 'DB pullover', ['chest-acc', 'back-acc'], ['db', 'bench'], 0, 3, 12, 60, 'Across the bench, one dumbbell, reach back with long arms.'),
 
-  // ---------- Strength: pull ----------
-  reps('db-row', 'One-arm DB row', ['pull'], ['db', 'bench'], 0, 4, 10, 75, 'Hand and knee on bench. Pull the dumbbell to your hip.', SIDE),
-  reps('db-bent-row', 'Bent-over DB row', ['pull'], ['db'], 0, 3, 10, 75, 'Hinge forward, flat back, row both dumbbells.'),
-  reps('tonal-lat-pulldown', 'Tonal lat pulldown', ['pull'], ['tonal'], 0, 3, 10, 75, 'Pull elbows down to your ribs.'),
-  reps('tonal-seated-row', 'Tonal seated row', ['pull'], ['tonal'], 0, 3, 10, 75, 'Tall chest, squeeze shoulder blades.'),
+  // ---------- Back ----------
+  reps('db-row', 'One-arm DB row', ['back'], ['db', 'bench'], 0, 4, 10, 75, 'Hand and knee on bench. Pull the dumbbell to your hip.', SIDE),
+  reps('db-bent-row', 'Bent-over DB row', ['back'], ['db'], 0, 3, 10, 75, 'Hinge forward, flat back, row both dumbbells.'),
+  reps('renegade-row', 'Renegade row', ['back', 'core'], ['db'], 0, 3, 8, 75, 'Push-up position on dumbbells, row one side at a time, hips still.', SIDE),
+  reps('tonal-lat-pulldown', 'Tonal lat pulldown', ['back'], ['tonal'], 0, 3, 10, 75, 'Pull elbows down to your ribs. No pull-up bar at home, so this is the vertical pull.'),
+  reps('tonal-seated-row', 'Tonal seated row', ['back'], ['tonal'], 0, 3, 10, 75, 'Tall chest, squeeze shoulder blades.'),
+  reps('reverse-fly', 'DB reverse fly', ['back-acc'], ['db'], 0, 3, 12, 60, 'Bent over, light dumbbells, lead with the back of your hands.'),
+  reps('db-shrug', 'DB shrug', ['back-acc'], ['db'], 0, 3, 12, 60, 'Straight up, hold 1 s at the top.'),
+  reps('ytw', 'Prone Y-T-W raises', ['back-acc'], ['bw'], 0, 3, 8, 45, 'Lying face down. Thumbs up, squeeze shoulder blades. Healthy shoulders for shooting.'),
 
   // ---------- Strength: single leg ----------
   reps('bulgarian', 'Bulgarian split squat', ['single-leg'], ['db', 'bench'], 0, 3, 8, 90, 'Back foot on bench. Lean slightly forward. Stop short of any knee pain.', SIDE),
@@ -95,13 +103,23 @@ export const LIBRARY = [
   reps('lateral-lunge', 'DB lateral lunge', ['single-leg'], ['db'], 0, 3, 8, 75, 'Big step sideways, sit into the hip. Great for guard footwork.', SIDE),
   reps('sl-rdl', 'Single-leg RDL', ['single-leg', 'hinge'], ['db'], 0, 3, 8, 75, 'Slow and balanced. Hips stay square.', SIDE),
 
-  // ---------- Strength: shoulders / arms ----------
+  // ---------- Shoulders ----------
   reps('db-ohp', 'DB shoulder press', ['shoulders'], ['db'], 0, 3, 8, 90, 'Standing or seated. Ribs down, press straight up.'),
   reps('kneeling-press', 'Half-kneeling one-arm press', ['shoulders'], ['db'], 0, 3, 8, 75, 'Squeeze the glute of the down knee.', SIDE),
   reps('lateral-raise', 'DB lateral raise', ['shoulders'], ['db'], 0, 3, 12, 60, 'Light weight, lead with elbows.'),
-  reps('db-curl', 'DB curl', ['arms'], ['db'], 0, 3, 10, 60, 'No swinging.'),
-  reps('hammer-curl', 'Hammer curl', ['arms'], ['db'], 0, 3, 10, 60, 'Thumbs up the whole time.'),
-  reps('oh-triceps', 'Overhead DB triceps extension', ['arms'], ['db'], 0, 3, 12, 60, 'Elbows point forward.'),
+
+  // ---------- Arms ----------
+  reps('db-curl', 'DB curl', ['biceps'], ['db'], 0, 3, 10, 60, 'No swinging.'),
+  reps('hammer-curl', 'Hammer curl', ['biceps', 'forearms'], ['db'], 0, 3, 10, 60, 'Thumbs up the whole time.'),
+  reps('concentration-curl', 'Concentration curl', ['biceps'], ['db', 'bench'], 0, 3, 10, 45, 'Seated, elbow on inner thigh, slow lower.', SIDE),
+  reps('zottman-curl', 'Zottman curl', ['biceps', 'forearms'], ['db'], 0, 3, 10, 60, 'Curl palms up, lower palms down. Builds forearms too.'),
+  reps('oh-triceps', 'Overhead DB triceps extension', ['triceps'], ['db'], 0, 3, 12, 60, 'Elbows point forward.'),
+  reps('skull-crusher', 'DB skull crusher', ['triceps'], ['db', 'bench'], 0, 3, 10, 60, 'Lying on bench, lower to the sides of your head, elbows still.'),
+  reps('bench-dip', 'Bench dips', ['triceps'], ['bw', 'bench'], 0, 3, 12, 60, 'Hands on bench behind you. Stop if shoulders complain.'),
+  reps('close-pushup', 'Close-grip push-ups', ['triceps', 'chest-acc'], ['bw'], 0, 3, 12, 60, 'Hands under shoulders, elbows brush your ribs.'),
+  reps('tonal-pushdown', 'Tonal triceps pushdown', ['triceps'], ['tonal'], 0, 3, 12, 60, 'Elbows pinned to your sides.'),
+  reps('wrist-curl', 'Wrist curls (both ways)', ['forearms'], ['db'], 0, 2, 15, 45, 'Strong wrists and grip for ball handling.'),
+  reps('farmer-carry', 'Farmer carry', ['forearms', 'core'], ['db'], 0, 3, 40, 60, 'Heaviest dumbbells you can hold. Walk tall.', { repUnit: 'm' }),
 
   // ---------- Core ----------
   reps('dead-bug', 'Dead bug', ['core'], ['bw'], 0, 3, 10, 45, 'Low back glued to the floor.', SIDE),
@@ -162,6 +180,13 @@ export const LIBRARY = [
   time('bw-circuit', 'Bodyweight circuit', ['circuit'], ['bw'], 1, 10, '40 s on / 20 s off: push-ups, reverse lunges, mountain climbers, plank. 3 rounds.'),
   time('tonal-hiit', 'Tonal conditioning circuit', ['circuit'], ['tonal'], 0, 12, 'Pick a short Tonal HIIT or circuit program.'),
   time('slide-sprint-finisher', 'Slide + sprint finisher', ['circuit'], ['court'], 2, 8, 'Slide lane-to-lane ×4, sprint to half court, back-pedal. 6 rounds, 60 s rest.'),
+
+  // ---------- Cardio finishers (end of lifting days) ----------
+  cardio('bike', 'bike-finisher', 'Bike finisher', ['finisher'], ['bike'], 0, 10, '20 s hard / 40 s easy. Zero knee pounding.', { maxMin: 20 }),
+  cardio('swim', 'swim-finisher', 'Swim finisher', ['finisher'], ['pool'], 0, 10, 'Strong 50 m laps with 30 s rest.', { laps: 5, maxMin: 20 }),
+  time('pool-run-finisher', 'Pool running finisher', ['finisher'], ['pool'], 0, 10, 'Deep-water running: 30 s hard / 30 s easy.', { maxMin: 20 }),
+  sprint('court-finisher', 'Court sprint finisher', ['finisher'], ['court'], 2, 6, 28, 45, 'Baseline to baseline and back. Not on legs day.'),
+  time('db-complex-finisher', 'DB complex finisher', ['finisher'], ['db'], 0, 10, '6 reps each without setting the dumbbells down: RDL → row → hang clean → press → squat. Rest 90 s, repeat.', { maxMin: 15 }),
 
   // ---------- Basketball skills ----------
   time('handles-stationary', 'Stationary ball-handling series', ['handle'], ['ball'], 0, 10, 'Crossovers, between legs, behind back, combos. 30 s each, both hands, eyes up.'),

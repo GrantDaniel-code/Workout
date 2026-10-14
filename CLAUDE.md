@@ -74,12 +74,13 @@ A personal web app that generates workouts for me and lets me log and track them
 - **Shooting is tracked by shot type** (threes, mid-range, free throws, finishing), not by court spot.
 - **Knees have not been checked by a doctor.** Gently recommend getting them checked when pain shows up.
 - **Knee rules:** 0–10 pain scale before every workout. Pain 3+ → runs and jumps swap to bike/pool/low-impact. Pain 6+ → recovery only. During a workout, stop if pain goes above 3.
+- **Lifting is a split rotation: Chest → Back → Legs → Arms** (added 2026-10-14). The "Strength" focus picks the split I trained longest ago (Auto), or I can choose one. Every lifting day ends with a core block and a cardio finisher. Legs day finishers are zero-impact (bike/pool/DB complex). With knee pain 3+, Auto skips legs and does the next upper-body day. Trainer/custom sessions can be tagged with a split on the finish screen so they count toward the rotation.
 - **Units: both imperial and metric**, switchable in Settings. Data is stored in metric (kg, meters, seconds) and converted for display.
 
 ## Tech stack
 - Node.js is not installed on my Mac, so the app uses **no build tools**: plain HTML, CSS, and JavaScript modules.
 - Data storage: `localStorage` in the phone's browser (see `js/storage.js`).
-- To run it: double-click `start.command` (or run `python3 serve.py`). It prints a link to open on my phone. Python 3 comes with macOS.
+- The project lives in `~/Workout`. To run it: double-click `start.command` (or run `python3 serve.py`). It prints a link to open on my phone. Python 3 comes with macOS.
 - Files:
   - `index.html`: page shell, `css/styles.css`: the scoreboard theme
   - `js/app.js`: screens and buttons
@@ -100,4 +101,4 @@ A personal web app that generates workouts for me and lets me log and track them
 9. Later: triathlon endurance blocks, optional AI workouts, sync.
 
 ## Project status
-- 2026-10-14: Steps 0 and 1 done (generate → edit → log → history, knee rules, units, export/import). Next: step 2, full check-ins.
+- 2026-10-14: Steps 0 and 1 done (generate → edit → log → history, knee rules, units, export/import). Added Chest/Back/Legs/Arms split rotation. Next: step 2, full check-ins.

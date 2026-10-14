@@ -10,7 +10,7 @@ import { LIBRARY, byId } from './exercises.js';
 //   extra   slots used to fill leftover time
 //   cool    add a cool-down at the end
 const TEMPLATES = {
-  strength:     { warmup: ['warm-general'], main: ['squat', 'pull', 'hinge', 'push', 'single-leg', 'shoulders', 'core', 'calves', 'arms', 'knee-care'], cap: 60, extra: ['knee-care', 'mobility'], cool: true },
+  strength:     { warmup: ['warm-general'], main: [], cap: 50, extra: ['knee-care', 'mobility'], cool: true }, // lifts come from SPLITS below
   plyo:         { warmup: ['warm-general', 'warm-landing'], main: ['jump-vertical', 'jump-single', 'jump-horizontal', 'reactive', 'power-upper', 'single-leg', 'core'], cap: 45, extra: ['knee-care', 'mobility'], cool: true },
   speed:        { warmup: ['warm-general', 'warm-sprint'], main: ['accel', 'agility', 'max-speed', 'decel', 'core'], cap: 40, extra: ['knee-care', 'mobility'], cool: true },
   running:      { warmup: ['warm-run'], main: ['run'], cap: 40, extra: ['knee-care', 'mobility'], cool: true },
@@ -19,6 +19,26 @@ const TEMPLATES = {
   swimbike:     { warmup: [], main: ['swim', 'bike'], cap: 110, extra: ['mobility'], cool: true },
   recovery:     { warmup: [], main: ['easy-cardio', 'mobility', 'mobility'], cap: 120, extra: ['mobility', 'easy-cardio'], cool: false },
 };
+
+// ---- Lifting split: Chest → Back → Legs → Arms, every day ends with core + cardio ----
+// The order keeps the same muscles apart (triceps on chest day, biceps on back day).
+export const SPLIT_ORDER = ['chest', 'back', 'legs', 'arms'];
+export const SPLITS = {
+  chest: { name: 'Chest', desc: 'Chest, shoulders, triceps', lifts: ['chest', 'chest', 'shoulders', 'chest-acc', 'triceps', 'chest-acc'] },
+  back:  { name: 'Back',  desc: 'Back, rear delts, biceps',  lifts: ['back', 'back', 'back-acc', 'biceps', 'back-acc', 'back'] },
+  legs:  { name: 'Legs',  desc: 'Squat, hinge, single-leg',  lifts: ['squat', 'hinge', 'single-leg', 'calves', 'knee-care', 'single-leg'] },
+  arms:  { name: 'Arms',  desc: 'Biceps, triceps, shoulders', lifts: ['biceps', 'triceps', 'shoulders', 'biceps', 'triceps', 'forearms'] },
+};
+
+// Which split is up next: the one you trained longest ago (never = first).
+// With sore knees (3+), legs day waits and the next upper-body day goes first.
+export function nextSplit(workouts, kneePain = 0) {
+  const last = {};
+  for (const w of workouts) if (w.split) last[w.split] = w.finishedAt;
+  const order = [...SPLIT_ORDER].sort((a, b) => (last[a] || '').localeCompare(last[b] || ''));
+  if (kneePain >= 3 && order[0] === 'legs') return { split: order[1], legsDelayed: true };
+  return { split: order[0], legsDelayed: false };
+}
 
 const JUMPY = ['running', 'plyo', 'speed', 'conditioning', 'skills'];
 const DOCTOR = { level: 'info', text: 'Your knees hurt often. It is worth getting them checked by a doctor or physio so the plan can match what they find.' };
@@ -70,7 +90,7 @@ function weightedPick(list) {
   return list[list.length - 1];
 }
 
-export function generate({ focus, minutes, kneePain, equipment }) {
+export function generate({ focus, minutes, kneePain, equipment, split = 'chest', legsDelayed = false }) {
   const notes = [];
   let f = focus;
   let maxImpact = 2;
@@ -107,30 +127,48 @@ export function generate({ focus, minutes, kneePain, equipment }) {
   const budget = minutes - totalMinutes(warmup) - totalMinutes(cool);
   const mainBudget = Math.min(budget, T.cap);
 
-  // ---- Main work ----
-  let slots = T.main;
-  if (f === 'swimbike') slots = minutes >= 75 ? ['swim', 'bike'] : [Math.random() < 0.5 ? 'swim' : 'bike'];
+  // Fill slots in order until the time runs out.
+  const fill = (slots, limit) => {
+    const out = [];
+    let n = 0;
+    for (const sl of slots) {
+      if (out.length && n >= limit - 4) break;
+      const ex = pick(sl);
+      if (!ex) continue;
+      const it = makeItem(ex, 'main');
+      const m = it.maxMin ? 10 : estMinutes(it);
+      if (out.length >= 2 && n + m > limit + 3) { used.delete(ex.id); continue; }
+      out.push(it);
+      n += m;
+    }
+    return out;
+  };
 
-  const main = [];
-  let usedMin = 0;
-  for (const s of slots) {
-    if (main.length && usedMin >= mainBudget - 4) break;
-    const ex = pick(s);
-    if (!ex) continue;
-    const it = makeItem(ex, 'main');
-    const m = it.maxMin ? 10 : estMinutes(it);
-    if (main.length >= 2 && usedMin + m > mainBudget + 3) { used.delete(ex.id); continue; }
-    main.push(it);
-    usedMin += m;
+  let main;
+  if (f === 'strength') {
+    // Core and a cardio finisher are always included, then lifts fill the rest.
+    const core = [pick('core'), minutes >= 75 && pick('core')].filter(Boolean).map(ex => makeItem(ex, 'main'));
+    const finCap = split === 'legs' ? 0 : maxImpact; // no pounding after legs
+    const finEx = weightedPick(LIBRARY.filter(e => e.slots.includes('finisher') && !used.has(e.id) && fits(e, finCap, equipment)));
+    const fin = finEx ? [makeItem(finEx, 'main')] : [];
+    if (finEx) used.add(finEx.id);
+    fin.filter(it => it.maxMin).forEach(it => scaleTo(it, minutes <= 45 ? 5 : minutes <= 75 ? 10 : 15));
+    const liftBudget = Math.min(budget - totalMinutes(core) - totalMinutes(fin), T.cap);
+    main = [...fill(SPLITS[split].lifts, liftBudget), ...core, ...fin];
+    if (legsDelayed) notes.push({ level: 'warn', text: 'Legs were up next, but your knees are sore, so legs day waits. Upper body today.' });
+    else if (split === 'legs' && kneePain >= 3) notes.push({ level: 'warn', text: 'Legs day with sore knees: stay in a pain-free range, and skip any exercise that hurts.' });
+  } else {
+    let slots = T.main;
+    if (f === 'swimbike') slots = minutes >= 75 ? ['swim', 'bike'] : [Math.random() < 0.5 ? 'swim' : 'bike'];
+    main = fill(slots, mainBudget);
+    // Stretch runs/rides/swims to fill the main time.
+    const stretchy = main.filter(it => it.maxMin);
+    if (stretchy.length) {
+      const fixedMin = totalMinutes(main.filter(it => !it.maxMin));
+      stretchy.forEach(it => scaleTo(it, (mainBudget - fixedMin) / stretchy.length));
+    }
   }
-
-  // Stretch runs/rides/swims to fill the main time.
-  const stretchy = main.filter(it => it.maxMin);
-  if (stretchy.length) {
-    const fixedMin = totalMinutes(main.filter(it => !it.maxMin));
-    stretchy.forEach(it => scaleTo(it, (mainBudget - fixedMin) / stretchy.length));
-  }
-  usedMin = totalMinutes(main);
+  let usedMin = totalMinutes(main);
 
   // ---- Leftover time: knee care and mobility, not more hard work ----
   let extra = budget - usedMin;
@@ -154,6 +192,7 @@ export function generate({ focus, minutes, kneePain, equipment }) {
     id: uid(),
     createdAt: new Date().toISOString(),
     focus: f,
+    split: f === 'strength' ? split : null,
     requestedFocus: focus,
     minutes,
     kneePain,
