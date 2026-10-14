@@ -100,4 +100,4 @@ A personal web app that generates workouts for me and lets me log and track them
 9. Later: triathlon endurance blocks, optional AI workouts, sync.
 
 ## Project status
-- 2026-10-14: Requirements and decisions written. Building steps 0 and 1.
+- 2026-10-14: Steps 0 and 1 done (generate → edit → log → history, knee rules, units, export/import). Next: step 2, full check-ins.

@@ -142,3 +142,65 @@ a { color: var(--accent); }
 /* ----- empty state ----- */
 .empty { text-align: center; color: var(--muted); padding: 40px 10px; }
 .empty .big { font-family: var(--display); font-size: 34px; color: var(--text); letter-spacing: 1px; }
+
+/* ----- segmented toggle ----- */
+.seg { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 4px; padding: 4px; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; margin: 8px 0 4px; }
+.seg button { min-height: 40px; border: 0; border-radius: 9px; background: transparent; color: var(--muted); font-family: var(--display); font-size: 20px; letter-spacing: 1px; cursor: pointer; }
+.seg button.on { background: var(--accent); color: var(--accent-ink); }
+
+/* ----- workout items ----- */
+.item-name { font-weight: 800; font-size: 17px; }
+.target { color: var(--accent); font-weight: 600; font-size: 14px; margin-top: 2px; }
+.cue { color: var(--muted); font-size: 13px; margin-top: 6px; }
+.item.is-done { border-color: rgba(53, 208, 127, 0.5); }
+.item.is-done .item-name::after { content: "  ✓"; color: var(--good); }
+.item-actions { margin-top: 10px; }
+.tag { display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; padding: 2px 6px; border-radius: 6px; background: var(--panel-2); color: var(--muted); vertical-align: middle; }
+.tag.warn { color: var(--warn); background: rgba(255, 204, 51, 0.1); }
+
+.fields { display: flex; gap: 8px; margin-top: 10px; }
+.fld { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.fld span { font-size: 11px; letter-spacing: 0.5px; text-transform: uppercase; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fld input {
+  width: 100%; min-height: 44px; padding: 0 10px;
+  background: #050607; border: 1px solid var(--line); border-radius: 9px;
+  font-size: 18px; font-weight: 600;
+}
+.fld input:focus, .search:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
+.fld.bw { justify-content: flex-end; padding-bottom: 12px; font-size: 13px; color: var(--muted); }
+
+.log { margin-top: 10px; }
+.setrow { display: flex; gap: 8px; align-items: flex-end; margin-bottom: 8px; }
+.setrow.done .fld input { border-color: rgba(53, 208, 127, 0.5); }
+.setno { width: 22px; padding-bottom: 12px; font-family: var(--display); font-size: 22px; color: var(--muted); text-align: center; }
+.pct { min-width: 52px; padding-bottom: 8px; font-family: var(--display); font-size: 28px; color: var(--accent); text-align: center; }
+.check {
+  flex: none; width: 48px; height: 44px; border-radius: 10px;
+  border: 1px solid var(--line); background: var(--panel-2); color: var(--muted);
+  font-size: 22px; font-weight: 800; cursor: pointer;
+}
+.check.on { background: var(--good); border-color: var(--good); color: #002611; }
+
+/* ----- history ----- */
+.hist { display: flex; gap: 14px; align-items: center; text-decoration: none; color: inherit; }
+.date { width: 56px; flex: none; text-align: center; background: #050607; border: 1px solid var(--line); border-radius: 10px; padding: 6px 0; }
+.date .mo { font-size: 11px; letter-spacing: 1.5px; color: var(--muted); }
+.date .dy { font-family: var(--display); font-size: 32px; line-height: 1; color: var(--accent); }
+.hist-body { min-width: 0; }
+.muted { color: var(--muted); }
+
+/* ----- overlay sheet ----- */
+.overlay { position: fixed; inset: 0; z-index: 20; background: rgba(0, 0, 0, 0.6); overflow-y: auto; }
+.sheet {
+  max-width: 640px; min-height: 100%; margin: 0 auto;
+  background: var(--bg); padding: calc(16px + env(safe-area-inset-top)) 16px calc(24px + env(safe-area-inset-bottom));
+}
+.search {
+  width: 100%; min-height: 48px; padding: 10px 12px; margin-top: 8px;
+  background: var(--panel); border: 1px solid var(--line); border-radius: 10px; font-size: 16px;
+}
+.pick {
+  display: block; width: 100%; text-align: left; padding: 14px 12px; margin-bottom: 6px;
+  background: var(--panel); border: 1px solid var(--line); border-radius: 10px; font-weight: 600; cursor: pointer;
+}
+.draft-card { border-color: var(--accent); }
